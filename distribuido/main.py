@@ -9,15 +9,16 @@ from loops import loop_input, loop_output
 
 def main(pinos_json):
     pinos = inicializa_pinos(pinos_json=pinos_json)
-    queue_input, queue_output = Queue(), Queue()
-    processo_input = Process(target=loop_input, args=(queue_input, pinos), daemon=True)
-    # processo_output = Process(target=loop_output, args=(queue_output,), daemon=True)
+    queue_infos, queue_msg = Queue(), Queue()
+    processo_input = Process(target=loop_input, args=(queue_infos, pinos), daemon=True)
+    # processo_output = Process(target=loop_output, args=(pinos,), daemon=True)
 
-    queue_input.put({'qtd_pessoas': 0})
+    queue_infos.put({'qtd_pessoas': 0})
 
     processo_input.start()
     # processo_output.start()
 
+    loop_output(pinos)
     processo_input.join()
     # processo_output.join()
 

@@ -12,6 +12,7 @@ def inicializa_pinos(pinos_json):
             GPIO.setup(gpio, GPIO.IN)
         elif pino['dir'] == 'out':
             GPIO.setup(gpio, GPIO.OUT)
+            GPIO.output(gpio, 0)
         elif pino['dir'] == '1-Wire':
             # TODO: Implementar 1-Wire similar ao I2C
             continue
