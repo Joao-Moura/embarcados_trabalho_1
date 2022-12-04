@@ -5,16 +5,22 @@ import inspect
 from time import sleep
 
 
-def callback_presenca(pino, pinos, *args, **kwargs):
+def callback_presenca(queue, pinos, *args, **kwargs):
     print(f'Função {inspect.currentframe().f_code.co_name} chamada')
-    if GPIO.input(pinos[pino]['GPIO']):
-        if GPIO.input(pinos['SFum']['GPIO']):
-            GPIO.output(pinos['AL_BZ']['GPIO'], 1)
-        else:
-            luzes = [pinos[p]['GPIO'] for p in pinos if p in ('L_01', 'L_02')]
-            GPIO.output(luzes, 1)
-            sleep(15)
-            GPIO.output(luzes, 0)
+    infos = queue.get(block=True)
+    alerta_ligado = infos['sistema_alerta']
+    queue.put(infos)
+
+    if alerta_ligado:
+        GPIO.output(pinos['AL_BZ']['GPIO'], 1)
+    else:
+        luzes = [
+            pinos[p]['GPIO'] for p in pinos
+            if p in ('L_01', 'L_02') and not GPIO.input(pinos[p]['GPIO'])
+        ]
+        GPIO.output(luzes, 1)
+        sleep(15)
+        GPIO.output(luzes, 0)
 
 
 def callback_fumaca(queue, *args, **kwargs):

@@ -1,50 +1,50 @@
 {
     "L_01": {
-        "GPIO": 18,
+        "GPIO": 26,
         "dir": "out"
     },
     "L_02": {
-        "GPIO": 23,
+        "GPIO": 19,
         "dir": "out"
     },
     "AC": {
-        "GPIO": 24,
+        "GPIO": 13,
         "dir": "out"
     },
     "PR": {
-        "GPIO": 25,
+        "GPIO": 6,
         "dir": "out"
     },
     "AL_BZ": {
-        "GPIO": 8,
+        "GPIO": 5,
         "dir": "out"
     },
     "SPres": {
-        "GPIO": 7,
+        "GPIO": 0,
         "dir": "in"
     },
     "SFum": {
-        "GPIO": 1,
+        "GPIO": 11,
         "dir": "in"
     },
     "SJan": {
-        "GPIO": 12,
+        "GPIO": 9,
         "dir": "in"
     },
     "SPor": {
-        "GPIO": 16,
+        "GPIO": 10,
         "dir": "in"
     },
     "SC_IN": {
-        "GPIO": 20,
+        "GPIO": 22,
         "dir": "in"
     },
     "SC_OUT": {
-        "GPIO": 21,
+        "GPIO": 27,
         "dir": "in"
     },
     "DHT22": {
-        "GPIO": 4,
+        "GPIO": 18,
         "dir": "1-Wire"
     }
 }

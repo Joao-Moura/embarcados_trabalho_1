@@ -13,12 +13,15 @@ def main(pinos_json):
     processo_input = Process(target=loop_input, args=(queue_infos, pinos), daemon=True)
     # processo_output = Process(target=loop_output, args=(pinos,), daemon=True)
 
-    queue_infos.put({'qtd_pessoas': 0})
+    queue_infos.put({
+        'qtd_pessoas': 0,
+        'sistema_alerta': False
+    })
 
     processo_input.start()
     # processo_output.start()
 
-    loop_output(pinos)
+    loop_output(queue_infos, pinos)
     processo_input.join()
     # processo_output.join()
 
