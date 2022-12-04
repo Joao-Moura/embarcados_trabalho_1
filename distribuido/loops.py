@@ -1,10 +1,12 @@
 import RPi.GPIO as GPIO
 
 import threading
+import socket
+import json
 
 from time import sleep
 
-from callbacks import *
+from distribuido.callbacks import *
 
 
 PINOS_CALLBACK_IN = [
@@ -20,7 +22,7 @@ PINOS_POSSIVEIS_OUT = ['L_01', 'L_02', 'AC', 'PR', 'AL_BZ']
 PINOS_ALARME = ['SPres', 'SJan', 'SPor', 'SFum']
 
 
-def loop_input(queue, pinos):
+def loop_input(queue_info, queue_socket, pinos):
     for pino, _, borda in PINOS_CALLBACK_IN:
         GPIO.add_event_detect(
             pinos[pino]['GPIO'],
@@ -32,12 +34,24 @@ def loop_input(queue, pinos):
             if GPIO.event_detected(pinos[pino]['GPIO']):
                 threading.Thread(
                     target=callback, daemon=True,
-                    kwargs={'queue': queue, 'pinos': pinos}
+                    kwargs={
+                        'queue_info': queue_info,
+                        'queue_socket': queue_socket,
+                        'pinos': pinos
+                    }
                 ).start()
         sleep(0.1)
 
 
-def loop_output(queue, pinos):
+def loop_output(queue, ip, porta):
+    while True:
+        request = json.dumps(queue.get(block=True))
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect((ip, porta))
+            sock.sendall(request.encode('utf-8'))
+
+
+def loop_output_deprec(queue, pinos):
     while True:
         selecionados = input(f"Ligar/desligar ({PINOS_POSSIVEIS_OUT}) [separados por ' ']: ").split()
         print(selecionados)

@@ -5,11 +5,11 @@ import inspect
 from time import sleep
 
 
-def callback_presenca(queue, pinos, *args, **kwargs):
+def callback_presenca(queue_info, pinos, *args, **kwargs):
     print(f'Função {inspect.currentframe().f_code.co_name} chamada')
-    infos = queue.get(block=True)
+    infos = queue_info.get(block=True)
     alerta_ligado = infos['sistema_alerta']
-    queue.put(infos)
+    queue_info.put(infos)
 
     if alerta_ligado:
         GPIO.output(pinos['AL_BZ']['GPIO'], 1)
@@ -23,29 +23,30 @@ def callback_presenca(queue, pinos, *args, **kwargs):
         GPIO.output(luzes, 0)
 
 
-def callback_fumaca(queue, *args, **kwargs):
+def callback_fumaca(queue_socket, *args, **kwargs):
+    print(f'Função {inspect.currentframe().f_code.co_name} chamada')
+    queue_socket.put({'SFum': True})
+
+
+def callback_janela(queue_info, *args, **kwargs):
     print(f'Função {inspect.currentframe().f_code.co_name} chamada')
 
 
-def callback_janela(queue, *args, **kwargs):
+def callback_porta(queue_info, *args, **kwargs):
     print(f'Função {inspect.currentframe().f_code.co_name} chamada')
 
 
-def callback_porta(queue, *args, **kwargs):
+def callback_entrada(queue_info, *args, **kwargs):
     print(f'Função {inspect.currentframe().f_code.co_name} chamada')
-
-
-def callback_entrada(queue, *args, **kwargs):
-    print(f'Função {inspect.currentframe().f_code.co_name} chamada')
-    infos = queue.get(block=True)
+    infos = queue_info.get(block=True)
     infos['qtd_pessoas'] += 1
     print(infos)
-    queue.put(infos)
+    queue_info.put(infos)
 
 
-def callback_saida(queue, *args, **kwargs):
+def callback_saida(queue_info, *args, **kwargs):
     print(f'Função {inspect.currentframe().f_code.co_name} chamada')
-    infos = queue.get(block=True)
+    infos = queue_info.get(block=True)
     infos['qtd_pessoas'] -= 1
     print(infos)
-    queue.put(infos)
+    queue_info.put(infos)
