@@ -15,10 +15,9 @@ def inicializa_socket(ip, porta, blocking=False):
 
 
 def realiza_conexao(ip, porta):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
     while True:
         try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((ip, porta))
             request = json.dumps({'nome': f'Sala {random.randrange(1000)}'})
             sock.sendall(request.encode('utf-8'))
@@ -26,3 +25,11 @@ def realiza_conexao(ip, porta):
         except (ConnectionRefusedError, OSError):
             print('Não foi possível conectar, tentando novamente em 2s')
             sleep(2)
+
+
+def ping_socket(sock):
+    try:
+        sock.sendall(b'ping')
+        return True
+    except:
+        return False

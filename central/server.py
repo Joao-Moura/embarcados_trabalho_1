@@ -6,8 +6,13 @@ PINOS_POSSIVEIS_OUT = ['L_01', 'L_02', 'AC', 'PR', 'AL_BZ', 'alarme']
 
 
 def trata_evento_read(socket):
-    data_recebida = socket.recv(1024)
-    return json.loads(data_recebida.decode("utf-8"))
+    try:
+        data_recebida = socket.recv(1024)
+        if data_recebida == b'ping':
+            return 'PING recebido'
+        return json.loads(data_recebida.decode("utf-8"))
+    except (OSError, json.JSONDecodeError):
+        print('Falha no recebimento, aguardando nova conexão.')
 
 
 def aceita_conexao(socket):
@@ -31,5 +36,8 @@ def callback_input(sockets_distribuidos):
     })
 
     print(f'Request montado: {request}')
-    sockets_distribuidos[socket].sendall(request.encode('utf-8'))
-    return sockets_distribuidos[socket]
+    try:
+        sockets_distribuidos[socket].sendall(request.encode('utf-8'))
+        return sockets_distribuidos[socket]
+    except (ConnectionRefusedError, ConnectionResetError, OSError):
+        print('Falha no envio, aguardando reconexão com servidor distribuido.')

@@ -6,7 +6,7 @@ import json
 
 from time import sleep
 
-from servidor.setup import inicializa_socket, realiza_conexao
+from servidor.setup import *
 from distribuido.callbacks import *
 
 
@@ -65,7 +65,8 @@ def loop_output(queue_info, queue_socket, ip, porta, pinos):
             sock.sendall(request.encode('utf-8'))
         except (ConnectionRefusedError, ConnectionResetError, OSError):
             semaforo_socket.acquire()
-            sock = realiza_conexao(ip, porta)
+            if not ping_socket(sock):
+                sock = realiza_conexao(ip, porta)
             semaforo_socket.release()
 
 
@@ -79,5 +80,6 @@ def loop_output_recebe(queue_info, queue_socket, ip, porta, sock, pinos):
             status = callback_response(queue_info, queue_socket, response, pinos)
         except (OSError, json.JSONDecodeError):
             semaforo_socket.acquire()
-            sock = realiza_conexao(ip, porta)
+            if not ping_socket(sock):
+                sock = realiza_conexao(ip, porta)
             semaforo_socket.release()

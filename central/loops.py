@@ -11,7 +11,7 @@ def loop_response(socket):
     sockets_distribuidos = {}
 
     while True:
-        rlist, _, xlist = select.select(inputs, [], [])
+        rlist, wlist, xlist = select.select(inputs, [], [])
 
         for read in rlist:
             if read == socket:
@@ -23,8 +23,12 @@ def loop_response(socket):
                 if conexao_enviada:
                     print(f'Response recebida: {trata_evento_read(conexao_enviada)}')
             else:
-                print(f'Response recebida: {trata_evento_read(read)}')
-
-        for exception in xlist:
-            print(exception)
-            continue
+                response = trata_evento_read(read)
+                if not response:
+                    inputs.remove(read)
+                    del sockets_distribuidos[[
+                        n for n, s in sockets_distribuidos.items()
+                        if s == read
+                    ][0]]
+                else:
+                    print(f'Response recebida: {response}')
