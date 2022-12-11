@@ -6,6 +6,7 @@ import json
 
 from time import sleep
 
+from servidor.setup import inicializa_socket, realiza_conexao
 from distribuido.callbacks import *
 
 
@@ -20,6 +21,8 @@ PINOS_CALLBACK_IN = [
 
 PINOS_POSSIVEIS_OUT = ['L_01', 'L_02', 'AC', 'PR', 'AL_BZ']
 PINOS_ALARME = ['SPres', 'SJan', 'SPor', 'SFum']
+
+semaforo_socket = threading.Semaphore(value=1)
 
 
 def loop_input(queue_info, queue_socket, pinos):
@@ -43,30 +46,38 @@ def loop_input(queue_info, queue_socket, pinos):
         sleep(0.1)
 
 
-def loop_output(queue, ip, porta):
+def loop_output(queue_info, queue_socket, ip, porta, pinos):
+    sock = realiza_conexao(ip, porta)
+
+    threading.Thread(
+        target=loop_output_recebe, daemon=True,
+        kwargs={
+            'queue_info': queue_info,
+            'queue_socket': queue_socket,
+            'ip': ip, 'porta': porta,
+            'sock': sock, 'pinos': pinos
+        }
+    ).start()
+
     while True:
-        request = json.dumps(queue.get(block=True))
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((ip, porta))
+        try:
+            request = json.dumps(queue_socket.get(block=True))
             sock.sendall(request.encode('utf-8'))
+        except (ConnectionRefusedError, ConnectionResetError, OSError):
+            semaforo_socket.acquire()
+            sock = realiza_conexao(ip, porta)
+            semaforo_socket.release()
 
 
-def loop_output_deprec(queue, pinos):
+def loop_output_recebe(queue_info, queue_socket, ip, porta, sock, pinos):
     while True:
-        selecionados = input(f"Ligar/desligar ({PINOS_POSSIVEIS_OUT}) [separados por ' ']: ").split()
-        print(selecionados)
+        try:
+            data_recebida = sock.recv(1024)
+            response = json.loads(data_recebida.decode('utf-8'))
 
-        for pino in selecionados:
-            if pino in PINOS_POSSIVEIS_OUT:
-                GPIO.output(pinos[pino]['GPIO'], not GPIO.input(pinos[pino]['GPIO']))
-            elif pino == 'alarme':
-                infos = queue.get(block=True)
-                alerta_ligado = infos['sistema_alerta']
-
-                if alerta_ligado:
-                    infos['sistema_alerta'] = False
-                elif not alerta_ligado and (True in [GPIO.input(pinos[p]['GPIO']) for p in PINOS_ALARME]):
-                    print(f'Impossível ligar alarme se algum dos pinos {", ".join(PINOS_ALARME)} estiverem ativos.')
-                else:
-                    infos['sistema_alerta'] = True
-                queue.put(infos)
+            print(f'Response recebida: {response}')
+            status = callback_response(queue_info, queue_socket, response, pinos)
+        except (OSError, json.JSONDecodeError):
+            semaforo_socket.acquire()
+            sock = realiza_conexao(ip, porta)
+            semaforo_socket.release()

@@ -1,21 +1,17 @@
-import selectors
 import sys
 
-from central.setup import inicializa_socket
+from servidor.setup import inicializa_socket
 from central.loops import loop_response
 
 
 def main(ip, porta):
-    seletor = selectors.DefaultSelector()
-    socket = inicializa_socket(ip=ip, porta=porta)
-    seletor.register(socket, selectors.EVENT_READ, data=None)
-
     try:
-        loop_response(seletor=seletor)
+        socket = inicializa_socket(ip=ip, porta=porta)
+        loop_response(socket)
     except KeyboardInterrupt:
         print('Programa Finalizado')
     finally:
-        seletor.close()
+        socket.close()
 
 
 if __name__ == '__main__':
