@@ -1,62 +1,67 @@
 {
-    "L_01": {
-        // "GPIO": 26,
-        "GPIO": 18,
-        "dir": "out"
-    },
-    "L_02": {
-        // "GPIO": 19,
-        "GPIO": 23,
-        "dir": "out"
-    },
-    "AC": {
-        // "GPIO": 13,
-        "GPIO": 24,
-        "dir": "out"
-    },
-    "PR": {
-        // "GPIO": 6,
-        "GPIO": 25,
-        "dir": "out"
-    },
-    "AL_BZ": {
-        // "GPIO": 5,
-        "GPIO": 8,
-        "dir": "out"
-    },
-    "SPres": {
-        // "GPIO": 0,
-        "GPIO": 7,
-        "dir": "in"
-    },
-    "SFum": {
-        // "GPIO": 11,
-        "GPIO": 1,
-        "dir": "in"
-    },
-    "SJan": {
-        // "GPIO": 9,
-        "GPIO": 12,
-        "dir": "in"
-    },
-    "SPor": {
-        // "GPIO": 10,
-        "GPIO": 16,
-        "dir": "in"
-    },
-    "SC_IN": {
-        // "GPIO": 22,
-        "GPIO": 20,
-        "dir": "in"
-    },
-    "SC_OUT": {
-        // "GPIO": 27,
-        "GPIO": 21,
-        "dir": "in"
-    },
-    "DHT22": {
-        // "GPIO": 18,
-        "GPIO": 4,
-        "dir": "1-Wire"
+    "nome_sala": "Sala 02",
+    "ip_server": "164.41.98.26",
+    "porta_server": 10761,
+    "pinos": {
+        "L_01": {
+            // "GPIO": 26,
+            "GPIO": 18,
+            "dir": "out"
+        },
+        "L_02": {
+            // "GPIO": 19,
+            "GPIO": 23,
+            "dir": "out"
+        },
+        "AC": {
+            // "GPIO": 13,
+            "GPIO": 24,
+            "dir": "out"
+        },
+        "PR": {
+            // "GPIO": 6,
+            "GPIO": 25,
+            "dir": "out"
+        },
+        "AL_BZ": {
+            // "GPIO": 5,
+            "GPIO": 8,
+            "dir": "out"
+        },
+        "SPres": {
+            // "GPIO": 0,
+            "GPIO": 7,
+            "dir": "in"
+        },
+        "SFum": {
+            // "GPIO": 11,
+            "GPIO": 1,
+            "dir": "in"
+        },
+        "SJan": {
+            // "GPIO": 9,
+            "GPIO": 12,
+            "dir": "in"
+        },
+        "SPor": {
+            // "GPIO": 10,
+            "GPIO": 16,
+            "dir": "in"
+        },
+        "SC_IN": {
+            // "GPIO": 22,
+            "GPIO": 20,
+            "dir": "in"
+        },
+        "SC_OUT": {
+            // "GPIO": 27,
+            "GPIO": 21,
+            "dir": "in"
+        },
+        "DHT22": {
+            // "GPIO": 18,
+            "GPIO": 4,
+            "dir": "1-Wire"
+        }
     }
 }

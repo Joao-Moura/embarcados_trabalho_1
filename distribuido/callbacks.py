@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+import Adafruit_DHT
 
 import inspect
 
@@ -8,53 +9,80 @@ SUCESSO = 'sucesso'
 ERROR = 'error'
 
 PINOS_ALARME = ['SPres', 'SJan', 'SPor', 'SFum']
+PINOS_TODOS = ['L_01', 'L_02', 'AC', 'PR']
 PINOS_POSSIVEIS_OUT = ['L_01', 'L_02', 'AC', 'PR', 'AL_BZ']
 
 
-def callback_presenca(queue_info, queue_socket, pinos, *args, **kwargs):
-    queue_socket.put({'SPres': True})
+def callback_dht22(queue_info, queue_socket, pinos, *args, **kwargs):
+    while True:
+        humidade, temperatura = Adafruit_DHT.read_retry(22, pinos['DHT22']['GPIO'])
+        infos = queue_info.get(block=True)
+        infos['temperatura'] = temperatura
+        infos['humidade'] = humidade
+        queue_info.put(infos)
+        sleep(2)
+
+
+def callback_presenca(queue_info, queue_socket, pinos, pino, *args, **kwargs):
+    if not GPIO.input(pinos[pino]['GPIO']):
+        queue_socket.put({'status': SUCESSO, 'SPres': False})
+        return
+
+    response = {'status': SUCESSO, 'SPres': True}
     infos = queue_info.get(block=True)
     alerta_ligado = infos['sistema_alerta']
     queue_info.put(infos)
 
     if alerta_ligado:
         GPIO.output(pinos['AL_BZ']['GPIO'], 1)
+        response['AL_BZ'] = True
+        queue_socket.put(response)
     else:
         luzes = [
-            pinos[p]['GPIO'] for p in pinos
+            p for p in pinos
             if p in ('L_01', 'L_02') and not GPIO.input(pinos[p]['GPIO'])
         ]
-        GPIO.output(luzes, 1)
+
+        GPIO.output([pinos[l]['GPIO'] for l in luzes], 1)
+        queue_socket.put(response | {p: True for p in luzes})
+
         sleep(15)
-        GPIO.output(luzes, 0)
+        GPIO.output([pinos[l]['GPIO'] for l in luzes], 0)
+        queue_socket.put({'status': SUCESSO} | {p: False for p in luzes})
 
 
-def callback_fumaca(queue_socket, *args, **kwargs):
-    print(f'Função {inspect.currentframe().f_code.co_name} chamada')
-    queue_socket.put({'SFum': True})
+def callback_fumaca(queue_socket, pinos, pino, *args, **kwargs):
+    estado = GPIO.input(pinos[pino]['GPIO'])
+    queue_socket.put({
+        'status': SUCESSO,
+        'SFum': bool(estado), 'AL_BZ': bool(estado),
+    })
+    GPIO.output(pinos['AL_BZ']['GPIO'], estado)
 
 
-def callback_janela(queue_socket, *args, **kwargs):
-    print(f'Função {inspect.currentframe().f_code.co_name} chamada')
-    queue_socket.put({'SJan': True})
+def callback_janela(queue_socket, pinos, pino, *args, **kwargs):
+    queue_socket.put({
+        'status': SUCESSO,
+        'SJan': bool(GPIO.input(pinos[pino]['GPIO']))
+    })
 
 
-def callback_porta(queue_socket, *args, **kwargs):
-    print(f'Função {inspect.currentframe().f_code.co_name} chamada')
-    queue_socket.put({'SPor': True})
+def callback_porta(queue_socket, pinos, pino, *args, **kwargs):
+    queue_socket.put({
+        'status': SUCESSO,
+        'SPor': bool(GPIO.input(pinos[pino]['GPIO']))
+    })
 
 
 def callback_entrada(queue_info, *args, **kwargs):
     infos = queue_info.get(block=True)
     infos['qtd_pessoas'] += 1
-    print(infos)
     queue_info.put(infos)
 
 
 def callback_saida(queue_info, *args, **kwargs):
     infos = queue_info.get(block=True)
     infos['qtd_pessoas'] -= 1
-    print(infos)
     queue_info.put(infos)
 
 
@@ -63,21 +91,27 @@ def callback_response(queue_info, queue_socket, response, pinos):
         if pino in PINOS_POSSIVEIS_OUT:
             GPIO.output(pinos[pino]['GPIO'], status)
             queue_socket.put({'status': SUCESSO, pino: status})
+        elif pino == 'todos':
+            response = {'status': SUCESSO}
+            for p in PINOS_TODOS:
+                GPIO.output(pinos[p]['GPIO'], status)
+                response[p] = status
+            queue_socket.put(response)
+        elif pino == 'info':
+            infos = queue_info.get(block=True)
+            queue_info.put(infos)
+            queue_socket.put({'status': SUCESSO, **infos})
         elif pino == 'alarme':
             retorno = {}
             infos = queue_info.get(block=True)
             alerta_ligado = infos['sistema_alerta']
 
-            if alerta_ligado:
-                infos['sistema_alerta'] = status
-                retorno['status'] = SUCESSO
-                retorno[pino] = status
-            elif not alerta_ligado and (True in [GPIO.input(pinos[p]['GPIO']) for p in PINOS_ALARME]):
+            if not alerta_ligado and (True in [GPIO.input(pinos[p]['GPIO']) for p in PINOS_ALARME]):
                 retorno['status'] = ERROR
                 retorno['msg'] = f'Impossível ligar alarme se algum dos pinos {", ".join(PINOS_ALARME)} estiver ativo.'
             else:
                 infos['sistema_alerta'] = status
                 retorno['status'] = SUCESSO
-                retorno[pino] = status
+                retorno['sistema_alerta'] = status
             queue_info.put(infos)
             queue_socket.put(retorno)

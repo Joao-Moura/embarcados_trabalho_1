@@ -1,10 +1,16 @@
 import json
 import RPi.GPIO as GPIO
+import Adafruit_DHT
 
 
-def inicializa_pinos(pinos_json):
-    with open(pinos_json, 'r') as f:
-        pinos = json.loads(f.read())
+def inicializa_placa(json_entrada):
+    with open(json_entrada, 'r') as f:
+        arquivo = json.loads(f.read())
+
+    nome_sala = arquivo['nome_sala']
+    ip = arquivo['ip_server']
+    porta = arquivo['porta_server']
+    pinos = arquivo['pinos']
 
     for pino in pinos.values():
         gpio = pino['GPIO']
@@ -14,9 +20,8 @@ def inicializa_pinos(pinos_json):
             GPIO.setup(gpio, GPIO.OUT)
             GPIO.output(gpio, 0)
         elif pino['dir'] == '1-Wire':
-            # TODO: Implementar 1-Wire similar ao I2C
             continue
         else:
             raise NotImplementedError(f'Direção "{pino["dir"]}" não implementada.')
 
-    return pinos
+    return nome_sala, ip, porta, pinos
