@@ -1,3 +1,7 @@
+import os
+import csv
+
+
 def inicializa_sala(nome_sala):
     return {
         "nome_sala": nome_sala,
@@ -40,5 +44,15 @@ def inicializa_sala(nome_sala):
         "temperatura": 0,
         "humidade": 0,
         "sistema_alerta": False,
+        "sistema_incendio": False,
         "qtd_pessoas": 0
     }
+
+
+def inicializa_log(nome_arquivo):
+    if os.path.exists(nome_arquivo):
+        return
+
+    with open(nome_arquivo, 'w') as f:
+        arquivo = csv.writer(f, delimiter=';')
+        arquivo.writerow(['Data/Hora', 'Nome Sala', 'Comando Executado', 'Request Enviado'])

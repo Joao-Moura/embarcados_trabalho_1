@@ -51,13 +51,19 @@ def callback_presenca(queue_info, queue_socket, pinos, pino, *args, **kwargs):
         queue_socket.put({'status': SUCESSO} | {p: False for p in luzes})
 
 
-def callback_fumaca(queue_socket, pinos, pino, *args, **kwargs):
+def callback_fumaca(queue_info, queue_socket, pinos, pino, *args, **kwargs):
+    infos = queue_info.get(block=True)
+    alerta_ligado = infos['sistema_incendio']
+    queue_info.put(infos)
+
     estado = GPIO.input(pinos[pino]['GPIO'])
-    queue_socket.put({
-        'status': SUCESSO,
-        'SFum': bool(estado), 'AL_BZ': bool(estado),
-    })
-    GPIO.output(pinos['AL_BZ']['GPIO'], estado)
+    response = {'status': SUCESSO}
+
+    if estado and alerta_ligado:
+        GPIO.output(pinos['AL_BZ']['GPIO'], True)
+        response['AL_BZ'] = True
+
+    queue_socket.put(response | {'SFum': bool(estado)})
 
 
 def callback_janela(queue_socket, pinos, pino, *args, **kwargs):
@@ -101,6 +107,18 @@ def callback_response(queue_info, queue_socket, response, pinos):
             infos = queue_info.get(block=True)
             queue_info.put(infos)
             queue_socket.put({'status': SUCESSO, **infos})
+        elif pino == 'estado':
+            response = {'status': SUCESSO}
+            for p in list(pinos.keys())[:-3]:
+                response[p] = bool(GPIO.input(pinos[p]['GPIO']))
+            infos = queue_info.get(block=True)
+            queue_info.put(infos)
+            queue_socket.put(response | infos)
+        elif pino == 'incendio':
+            infos = queue_info.get(block=True)
+            infos['sistema_incendio'] = status
+            queue_info.put(infos)
+            queue_socket.put({'status': SUCESSO, 'sistema_incendio': status})
         elif pino == 'alarme':
             retorno = {}
             infos = queue_info.get(block=True)

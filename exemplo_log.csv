@@ -1,0 +1,7 @@
+Data/Hora;Nome Sala;Comando Executado;Request Enviado
+17/12/2022 13:14:55;Sala 02;todos:True;"{""todos"": true}"
+17/12/2022 13:15:09;Sala 03;todos:True;"{""todos"": true}"
+17/12/2022 13:15:26;Sala 02;todos:false;"{""todos"": false}"
+17/12/2022 13:15:41;Sala 02;AC:True PR:True;"{""AC"": true, ""PR"": true}"
+17/12/2022 13:16:02;Sala 03;Todos:false alarme:true incendio:true;"{""Todos"": false, ""alarme"": true, ""incendio"": true}"
+17/12/2022 13:16:24;Sala 03;todos:false;"{""todos"": false}"

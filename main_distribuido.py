@@ -24,6 +24,7 @@ def main(json_entrada):
     queue_infos.put({
         'qtd_pessoas': 0,
         'sistema_alerta': False,
+        'sistema_incendio': False,
         'temperatura': 0,
         'humidade': 0
     })
