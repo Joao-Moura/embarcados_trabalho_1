@@ -1,5 +1,9 @@
 # Trabalho 1 FSE (2022-2)
 
+|Nome|Matricula|
+|:-:|:-:|
+|João Pedro Moura Oliveira|190030879|
+
 ## Executando o programa
 
 1. Preencha corretamente o arquivo exemplo_pinos.json com as portas, nome do cliente, ip e portas do servidor central
