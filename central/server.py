@@ -65,8 +65,7 @@ def aceita_conexao(estado_andar, socket):
 
 
 def callback_input(estado_andar, sockets_distribuidos, log):
-    print(estado_andar)
-    socket = input(f"Selecione o cliente. Disponíveis {list(sockets_distribuidos.keys())}")
+    socket = input(f"Selecione o cliente. Disponíveis {list(sockets_distribuidos.keys())}\n")
 
     if socket not in sockets_distribuidos:
         print(f'Cliente "{socket}" ainda não conectou/não existe.')

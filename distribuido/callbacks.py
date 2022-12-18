@@ -80,16 +80,24 @@ def callback_porta(queue_socket, pinos, pino, *args, **kwargs):
     })
 
 
-def callback_entrada(queue_info, *args, **kwargs):
+def callback_entrada(queue_info, queue_socket, *args, **kwargs):
     infos = queue_info.get(block=True)
     infos['qtd_pessoas'] += 1
     queue_info.put(infos)
+    queue_socket.put({
+        'status': SUCESSO,
+        'qtd_pessoas': infos['qtd_pessoas']
+    })
 
 
-def callback_saida(queue_info, *args, **kwargs):
+def callback_saida(queue_info, queue_socket, *args, **kwargs):
     infos = queue_info.get(block=True)
     infos['qtd_pessoas'] -= 1
     queue_info.put(infos)
+    queue_socket.put({
+        'status': SUCESSO,
+        'qtd_pessoas': infos['qtd_pessoas']
+    })
 
 
 def callback_response(queue_info, queue_socket, response, pinos):
